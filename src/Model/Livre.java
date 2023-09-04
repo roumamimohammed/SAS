@@ -1,4 +1,5 @@
 package Model;
+//import Connection.ConnectionManager;
 public class Livre {
     private Status newStatus;
     private String title;
