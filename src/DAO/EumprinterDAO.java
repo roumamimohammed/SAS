@@ -22,11 +22,9 @@ public class EumprinterDAO {
         eumprinterList = new ArrayList<>();
     }
 
-
     public void addEumprinter(eumprinter eumprinter) {
         eumprinterList.add(eumprinter);
     }
-
 
     public void displayAllEumprinters() {
         for (eumprinter eumprinter : eumprinterList) {
@@ -39,7 +37,6 @@ public class EumprinterDAO {
     }
 
     public void eumprintLivre(String ISBN, int memberNumero, Date date_emprunt, Date date_retour) {
-
         MembreDAO memberDAO = new MembreDAO(connection);
         Membre member = memberDAO.getMemberByNumero(memberNumero);
 
@@ -47,7 +44,6 @@ public class EumprinterDAO {
             System.out.println("Member with Numero_membre " + memberNumero + " does not exist.");
             return;
         }
-
 
         LivreDAO livreDAO = new LivreDAO(connection);
         Livre livre = livreDAO.getLivreByISBN(ISBN);
@@ -57,16 +53,14 @@ public class EumprinterDAO {
             return;
         }
 
-
         eumprinter eumprinter = new eumprinter(ISBN, memberNumero, date_emprunt, date_retour);
         addEumprinter(eumprinter);
-
-        updateLivreStatus(ISBN, Status.eumprinter);
 
         insertEumprinterRecord(eumprinter);
 
         System.out.println("Book with ISBN " + ISBN + " has been eumprinted to member " + memberNumero);
     }
+
     public void returnLivre(String ISBN) {
         eumprinter returnedEumprinter = null;
         for (eumprinter eumprinter : eumprinterList) {
@@ -81,44 +75,11 @@ public class EumprinterDAO {
             return;
         }
 
-        updateLivreStatus(ISBN, Status.disponible);
-
         eumprinterList.remove(returnedEumprinter);
 
         System.out.println("Book with ISBN " + ISBN + " has been returned and is now available.");
     }
 
-
-      public void checkForPerduLivres() {
-        Date currentDate = new Date();
-        for (eumprinter eumprinter : eumprinterList) {
-            long minutesDifference = (eumprinter.getDate_retour().getTime() - currentDate.getTime()) / (1000 * 60);
-
-            if (minutesDifference < 0) {
-                String ISBN = eumprinter.getISBN();
-                updateLivreStatus(ISBN, Status.perdu);
-            }
-        }
-    }
-
-    private void updateLivreStatus(String ISBN, Status newStatus) {
-        try {
-            String updateQuery = "UPDATE livre SET status = ? WHERE isbn = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
-            preparedStatement.setString(1, newStatus.toString());
-            preparedStatement.setString(2, ISBN);
-
-            int rowsAffected = preparedStatement.executeUpdate();
-
-            if (rowsAffected > 0) {
-                System.out.println("Livre status updated to " + newStatus.toString());
-            } else {
-                System.out.println("Failed to update livre status.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
     private void insertEumprinterRecord(eumprinter eumprinter) {
         try {
             String insertQuery = "INSERT INTO eumprinter (ISBN, Numero_membre, Date_emprunt, Date_retour) VALUES (?, ?, ?, ?)";
@@ -139,6 +100,4 @@ public class EumprinterDAO {
             e.printStackTrace();
         }
     }
-
-
 }
