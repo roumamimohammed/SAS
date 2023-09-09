@@ -1,5 +1,4 @@
 import Model.Membre;
-import Model.emprunt;
 import Model.Livre;
 import Model.Status;
 import Connection.ConnectionManager;
@@ -7,13 +6,9 @@ import DAO.EmpruntDAO;
 import DAO.LivreDAO;
 import DAO.MembreDAO;
 import Exceptions.DAOException;
-
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.Date;
 import java.util.Calendar;
-import java.text.SimpleDateFormat;
 
 public class Main {
     public static void main(String[] args) throws DAOException {
