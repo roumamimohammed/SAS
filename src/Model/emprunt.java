@@ -2,26 +2,26 @@ package Model;
 
 import java.util.Date;
 
-public class eumprinter {
-    private String ISBN;
-    private int Member;
+public class emprunt {
+    private Livre livre;
+    private Membre member;
     private Date Date_emprunt;
     private Date Date_retour;
 
-    public String getISBN() {
-        return ISBN;
+    public Livre getLivre() {
+        return livre;
     }
 
-    public void setISBN(String ISBN) {
-        this.ISBN = ISBN;
+    public void setLivre(Livre livre) {
+        this.livre = livre;
     }
 
-    public int getMember() {
-        return Member;
+    public Membre getMember() {
+        return member;
     }
 
-    public void setMember(int member) {
-        Member = member;
+    public void setMember(Membre member) {
+        this.member = member;
     }
 
     public Date getDate_emprunt() {
@@ -39,9 +39,9 @@ public class eumprinter {
     public void setDate_retour(Date date_retour) {
         Date_retour = date_retour;
     }
-    public eumprinter(String ISBN, int Membre, Date Date_emprunt, Date Date_retour) {
-        this.ISBN = ISBN;
-        this.Member = Membre;
+    public emprunt(Livre livre, Membre membre, Date Date_emprunt, Date Date_retour) {
+        this.livre = livre;
+        this.member = membre;
         this.Date_emprunt = Date_emprunt;
         this.Date_retour = Date_retour;
     }

@@ -1,5 +1,7 @@
 package Model;
 
+import java.util.List;
+
 public class Livre {
     private Status newStatus;
     private String title;
@@ -45,5 +47,9 @@ public class Livre {
 
     public void setStatus(Status status) {
         this.newStatus = status;
+    }
+
+    public List<Membre> getEmprunteurs() {
+        return null;
     }
 }

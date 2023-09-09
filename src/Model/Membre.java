@@ -1,6 +1,8 @@
 package Model;
 
 
+import java.util.List;
+
 public class Membre {
     private int Numero_membre;
     private String nom;
@@ -23,6 +25,9 @@ public class Membre {
     public Membre(int Numero_membre,String nom){
         this.Numero_membre=Numero_membre;
         this.nom=nom;
+    }
+    public List<Livre> getLivresEmpruntes() {
+        return null;
     }
 }
 

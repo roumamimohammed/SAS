@@ -1,22 +1,20 @@
 package DAO;
 
+import Exceptions.DAOException;
 import Model.Membre;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MembreDAO {
-    private Connection connection;
+    private final Connection connection;
 
     public MembreDAO(Connection connection) {
         this.connection = connection;
     }
 
-    public Membre createMember(Membre member) {
+    public void createMember(Membre member) throws DAOException {
         try {
             String insertQuery = "INSERT INTO membre (Numero_membre, nom) VALUES (?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
@@ -25,17 +23,16 @@ public class MembreDAO {
             int rowsAffected = preparedStatement.executeUpdate();
 
             if (rowsAffected > 0) {
-                System.out.println("Member added successfully.");
+                System.out.println("Member"+member+"added successfully.");
             } else {
                 System.out.println("Failed to add the member.");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DAOException("Error while creating a member.", e);
         }
-        return member;
     }
 
-    public void updateMember(Membre member) {
+    public void updateMember(Membre member) throws DAOException {
         try {
             String updateQuery = "UPDATE membre SET Numero_membre = ?, nom = ? WHERE Numero_membre = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
@@ -51,11 +48,11 @@ public class MembreDAO {
                 System.out.println("Failed to update the member.");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DAOException("Error while updating the member.", e);
         }
     }
 
-    public void deleteMember(int numero_membre) {
+    public void deleteMember(int numero_membre) throws DAOException {
         try {
             String deleteQuery = "DELETE FROM membre WHERE Numero_membre = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery);
@@ -68,11 +65,11 @@ public class MembreDAO {
                 System.out.println("Failed to delete the member.");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DAOException("Error while deleting the member.", e);
         }
     }
 
-    public Membre getMemberByNumero(int numero_membre) {
+    public Membre getMemberByNumero(int numero_membre) throws DAOException {
         try {
             String selectQuery = "SELECT * FROM membre WHERE Numero_membre = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
@@ -86,7 +83,7 @@ public class MembreDAO {
                 return new Membre(numMembre, nom);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DAOException("Error while fetching member by Numero_membre.", e);
         }
         return null;
     }
