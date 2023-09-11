@@ -83,8 +83,15 @@ public class Main {
                     String author = scanner.nextLine();
                     System.out.print("Enter isbn: ");
                     String isbn = scanner.nextLine();
+
                     Livre livre = new Livre(title, author, isbn, Status.disponible);
-                    livreDAO.createLivre(livre);
+                    try {
+                        livreDAO.createLivre(livre);
+                    } catch (DAOException.DuplicateException e) {
+                        System.out.println("ISBN already exists.");
+                    } catch (DAOException e) {
+                        System.out.println("Error while creating the book: " + e.getMessage());
+                    }
                 }
                 case 2 -> {
                     List<Livre> allLivres = livreDAO.getAllAvailableLivres();
@@ -201,7 +208,13 @@ public class Main {
                     System.out.print("Enter nom du membre: ");
                     String nomMembre = scanner.nextLine();
                     Membre membre = new Membre(numMembre, nomMembre);
-                    memberDAO.createMember(membre);
+                    try {
+                        memberDAO.createMember(membre);
+                    } catch (DAOException.DuplicateException e) {
+                        System.out.println("Member already exists.");
+                    } catch (DAOException e) {
+                        System.out.println("Error while creating the book: " + e.getMessage());
+                    }
                 }
                 case 2 -> {
                     scanner.nextLine();

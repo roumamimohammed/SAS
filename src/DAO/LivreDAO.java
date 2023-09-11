@@ -95,7 +95,14 @@ public class LivreDAO {
         }
     }
 
+
     public void createLivre(Livre livre) throws DAOException {
+        if (livre.getTitle() == null || livre.getTitle().isEmpty() ||
+                livre.getAuthor() == null || livre.getAuthor().isEmpty() ||
+                livre.getIsbn() == null || livre.getIsbn().isEmpty()) {
+            System.out.println("One or more input fields are empty or null. Book not added.");
+            return;
+        }
         try {
             String insertQuery = "INSERT INTO livre (title, author, isbn, status) VALUES (?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
@@ -107,16 +114,25 @@ public class LivreDAO {
             int rowsAffected = preparedStatement.executeUpdate();
 
             if (rowsAffected > 0) {
-                System.out.println("Book added successfully.");
             } else {
                 System.out.println("Failed to add the book.");
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while creating a book.", e);
+            if (e instanceof java.sql.SQLIntegrityConstraintViolationException && e.getMessage().contains("Duplicate entry")) {
+                throw new DAOException.DuplicateException("ISBN already exists.", e);
+            } else {
+                throw new DAOException("Error while creating a book.", e);
+            }
         }
     }
 
     public void updateLivre(Livre livre) throws DAOException {
+        if (livre.getTitle() == null || livre.getTitle().isEmpty() ||
+                livre.getAuthor() == null || livre.getAuthor().isEmpty() ||
+                livre.getIsbn() == null || livre.getIsbn().isEmpty()) {
+            System.out.println("One or more input fields are empty or null. Book not added.");
+            return;
+        }
         try {
             String updateQuery = "UPDATE livre SET title = ?, author = ?, status = ? WHERE isbn = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);

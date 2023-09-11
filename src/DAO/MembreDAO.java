@@ -28,7 +28,11 @@ public class MembreDAO {
                 System.out.println("Failed to add the member.");
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while creating a member.", e);
+            if (e instanceof java.sql.SQLIntegrityConstraintViolationException && e.getMessage().contains("Duplicate entry")) {
+                throw new DAOException.DuplicateException("member already exists.", e);
+            } else {
+                throw new DAOException("Error while creating a book.", e);
+            }
         }
     }
 
