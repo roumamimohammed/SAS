@@ -15,6 +15,11 @@ public class MembreDAO {
     }
 
     public void createMember(Membre member) throws DAOException {
+        if (member.getNom() == null || member.getNom().isEmpty())
+                {
+            System.out.println("One or more input fields are empty or null. member not added.");
+            return;
+        }
         try {
             String insertQuery = "INSERT INTO membre (Numero_membre, nom) VALUES (?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
@@ -31,7 +36,7 @@ public class MembreDAO {
             if (e instanceof java.sql.SQLIntegrityConstraintViolationException && e.getMessage().contains("Duplicate entry")) {
                 throw new DAOException.DuplicateException("member already exists.", e);
             } else {
-                throw new DAOException("Error while creating a book.", e);
+                throw new DAOException("Error while creating a book.");
             }
         }
     }
@@ -52,7 +57,7 @@ public class MembreDAO {
                 System.out.println("Failed to update the member.");
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while updating the member.", e);
+            throw new DAOException("Error while updating the member.");
         }
     }
 
@@ -69,7 +74,7 @@ public class MembreDAO {
                 System.out.println("Failed to delete the member.");
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while deleting the member.", e);
+            throw new DAOException("Error while deleting the member.");
         }
     }
 
@@ -87,7 +92,7 @@ public class MembreDAO {
                 return new Membre(numMembre, nom);
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while fetching member by Numero_membre.", e);
+            throw new DAOException("Error while fetching member by Numero_membre.");
         }
         return null;
     }

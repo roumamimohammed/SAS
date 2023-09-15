@@ -3,7 +3,6 @@ package DAO;
 import Exceptions.DAOException;
 import Model.Livre;
 import Model.Status;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,35 +17,6 @@ public class LivreDAO {
         this.connection = connection;
     }
 
-    public List<Livre> getBorrowedLivres() throws DAOException {
-        List<Livre> borrowedLivres = new ArrayList<>();
-
-        try {
-            String selectQuery = "SELECT * FROM livre WHERE status = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
-            preparedStatement.setString(1, Status.emprunte.toString());
-            execute(borrowedLivres, preparedStatement);
-        } catch (SQLException e) {
-            throw new DAOException("Error while getting borrowed books.", e);
-        }
-
-        return borrowedLivres;
-    }
-
-    public List<Livre> getLostLivres() throws DAOException {
-        List<Livre> lostLivres = new ArrayList<>();
-
-        try {
-            String selectQuery = "SELECT * FROM livre WHERE status = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
-            preparedStatement.setString(1, Status.perdu.toString());
-            execute(lostLivres, preparedStatement);
-        } catch (SQLException e) {
-            throw new DAOException("Error while getting lost books.", e);
-        }
-
-        return lostLivres;
-    }
 
     private void execute(List<Livre> lostLivres, PreparedStatement preparedStatement) throws SQLException {
         ResultSet resultSet = preparedStatement.executeQuery();
@@ -91,7 +61,7 @@ public class LivreDAO {
             System.out.println("Borrowed Books: " + borrowedBooks);
             System.out.println("Available Books: " + availableBooks);
         } catch (SQLException e) {
-            throw new DAOException("Error while displaying statistics.", e);
+            throw new DAOException("Error while displaying statistics.");
         }
     }
 
@@ -121,7 +91,7 @@ public class LivreDAO {
             if (e instanceof java.sql.SQLIntegrityConstraintViolationException && e.getMessage().contains("Duplicate entry")) {
                 throw new DAOException.DuplicateException("ISBN already exists.", e);
             } else {
-                throw new DAOException("Error while creating a book.", e);
+                throw new DAOException("Error while creating a book.");
             }
         }
     }
@@ -149,7 +119,7 @@ public class LivreDAO {
                 System.out.println("Failed to update the book.");
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while updating the book.", e);
+            throw new DAOException("Error while updating the book.");
         }
     }
 
@@ -170,7 +140,7 @@ public class LivreDAO {
                 return new Livre(title, author, isbnStr, status);
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while fetching book by ISBN.", e);
+            throw new DAOException("Error while fetching book by ISBN.");
         }
 
         return null;
@@ -185,7 +155,7 @@ public class LivreDAO {
             preparedStatement.setString(1, Status.disponible.toString());
             execute(availableLivres, preparedStatement);
         } catch (SQLException e) {
-            throw new DAOException("Error while fetching available books.", e);
+            throw new DAOException("Error while fetching available books.");
         }
 
         return availableLivres;
@@ -201,7 +171,7 @@ public class LivreDAO {
             preparedStatement.setString(2, "%" + keyword + "%");
             execute(matchingLivres, preparedStatement);
         } catch (SQLException e) {
-            throw new DAOException("Error while searching for books.", e);
+            throw new DAOException("Error while searching for books.");
         }
 
         return matchingLivres;
@@ -209,21 +179,49 @@ public class LivreDAO {
 
     public void deleteLivre(String isbn) throws DAOException {
         try {
+            if (connection == null || connection.isClosed()) {
+                throw new DAOException("Connection is not established.");
+            }
+
+            boolean isEmprunte = checkIfBookIsEmprunte(isbn);
+
+            if (isEmprunte) {
+                System.out.println("Cannot delete the book. It is currently borrowed.");
+                return;
+            }
+
             String deleteQuery = "DELETE FROM livre WHERE isbn = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery);
-            preparedStatement.setString(1, isbn);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery)) {
+                preparedStatement.setString(1, isbn);
 
-            int rowsAffected = preparedStatement.executeUpdate();
+                int rowsAffected = preparedStatement.executeUpdate();
 
-            if (rowsAffected > 0) {
-                System.out.println("Book deleted successfully.");
-            } else {
-                System.out.println("Failed to delete the book.");
+                if (rowsAffected > 0) {
+                    System.out.println("Book deleted successfully.");
+                } else {
+                    System.out.println("Book with ISBN " + isbn + " not found.");
+                }
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while deleting the book.", e);
+            throw new DAOException("Error while deleting the book.");
         }
     }
+
+    private boolean checkIfBookIsEmprunte(String isbn) throws SQLException {
+        String selectQuery = "SELECT status FROM livre WHERE isbn = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectQuery)) {
+            preparedStatement.setString(1, isbn);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String status = resultSet.getString("status");
+                    return Status.emprunte.toString().equals(status);
+                }
+            }
+        }
+        return false;
+    }
+
 
     public void markLivreAsLost(String isbn) throws DAOException {
         try {
@@ -240,7 +238,35 @@ public class LivreDAO {
                 System.out.println("Failed to mark the book as lost.");
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while marking the book as lost.", e);
+            throw new DAOException("Error while marking the book as lost.");
         }
+    }
+
+    public List<Livre> getBorrowedLivres() throws DAOException {
+        List<Livre> borrowedLivres =new ArrayList<>();
+        try{
+            String selectQuery = "SELECT * FROM livre WHERE status = ?";
+            PreparedStatement prepareStatement=connection.prepareStatement(selectQuery);
+            prepareStatement.setString(1,Status.emprunte.toString());
+            execute(borrowedLivres,prepareStatement);
+        }catch (SQLException e){
+            throw new DAOException("Error");
+        }
+        return borrowedLivres;
+    }
+
+    public List<Livre> getLostLivres() throws DAOException {
+        List<Livre> lostLivres = new ArrayList<>();
+
+        try {
+            String selectQuery = "SELECT * FROM livre WHERE status = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, Status.perdu.toString());
+            execute(lostLivres, preparedStatement);
+        } catch (SQLException e) {
+            throw new DAOException("Error while getting lost books.");
+        }
+
+        return lostLivres;
     }
 }

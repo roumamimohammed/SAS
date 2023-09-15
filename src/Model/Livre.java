@@ -15,6 +15,8 @@ public class Livre {
         this.newStatus = newStatus;
     }
 
+    public Livre() {
+    }
 
     public String getTitle() {
         return title;
@@ -49,7 +51,5 @@ public class Livre {
         this.newStatus = status;
     }
 
-    public List<Membre> getEmprunteurs() {
-        return null;
-    }
+
 }

@@ -5,28 +5,22 @@ import Model.Membre;
 import Model.emprunt;
 import Model.Livre;
 import Model.Status;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class EmpruntDAO {
     private final Connection connection;
-    private final List<emprunt> empruntList;
+    private  List<emprunt> empruntList  = new ArrayList<>();
 
     public EmpruntDAO(Connection connection) {
         this.connection = connection;
-        empruntList = new ArrayList<>();
+
     }
 
-    public void addemprunt(emprunt emprunt) {
-        empruntList.add(emprunt);
-    }
-    
+
+
     public void empruntLivre(String ISBN, int memberNumero, Date date_emprunt, Date date_retour) throws DAOException {
         MembreDAO memberDAO = new MembreDAO(connection);
         Membre member = memberDAO.getMemberByNumero(memberNumero);
@@ -45,15 +39,17 @@ public class EmpruntDAO {
         }
 
         emprunt emprunt = new emprunt(livre, member, date_emprunt, date_retour);
-        addemprunt(emprunt);
 
         insertempruntRecord(emprunt);
 
         System.out.println("Book with ISBN " + ISBN + " has been emprunted to member " + memberNumero);
     }
 
-    public void returnLivre(String ISBN) {
+    public void returnLivre(String ISBN) throws DAOException {
         emprunt returnedEmprunt = null;
+        empruntList = getEmpruntList(); // Call the getEmpruntList method to retrieve emprunt data from the database
+        LivreDAO livreDAO = new LivreDAO(connection);
+
         for (emprunt emprunt : empruntList) {
             if (emprunt.getLivre().getIsbn().equals(ISBN)) {
                 returnedEmprunt = emprunt;
@@ -66,10 +62,50 @@ public class EmpruntDAO {
             return;
         }
 
-        empruntList.remove(returnedEmprunt);
+        System.out.println("Book with ISBN " + ISBN + " has been returned.");
 
-        System.out.println("Book with ISBN " + ISBN + " has been returned and is now available.");
+        empruntList.remove(returnedEmprunt);
+        Livre livre = livreDAO.getLivreByISBN(ISBN);
+
+        if (livre != null) {
+            livre.setStatus(Status.disponible);
+            livreDAO.updateLivre(livre);
+            System.out.println("Book with ISBN " + ISBN + " is now available.");
+        } else {
+            System.out.println("No Livre found for ISBN " + ISBN + ".");
+        }
     }
+
+    private List<emprunt> getEmpruntList() throws DAOException {
+        List<emprunt> empruntList = new ArrayList<>();
+
+        try {
+            String query = "SELECT l.*, m.*, e.* FROM emprunt AS e INNER JOIN membre AS m INNER JOIN livre AS l ON e.ISBN = l.ISBN AND e.Numero_membre = m.Numero_membre;";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                String ISBN = resultSet.getString("ISBN");
+                int Numero_membre = resultSet.getInt("Numero_membre");
+                Date date_emprunt = resultSet.getTimestamp("Date_emprunt");
+                Date date_retour = resultSet.getTimestamp("Date_retour");
+
+                Livre livre=new Livre();
+               livre.setIsbn(ISBN);
+
+                Membre member = new Membre();
+                member.setNumero_membre(Numero_membre);
+
+                emprunt emprunt = new emprunt(livre, member, date_emprunt, date_retour);
+                empruntList.add(emprunt);
+            }
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving emprunt list.");
+        }
+        return empruntList;
+    }
+
+
 
     private void insertempruntRecord(emprunt emprunt) throws DAOException {
         try {
@@ -88,7 +124,9 @@ public class EmpruntDAO {
                 System.out.println("Failed to add emprunt record.");
             }
         } catch (SQLException e) {
-            throw new DAOException("Error while inserting emprunt record.", e);
+            throw new DAOException("Error while inserting emprunt record.");
         }
     }
+
+
 }

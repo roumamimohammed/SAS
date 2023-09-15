@@ -7,6 +7,15 @@ public class emprunt {
     private Membre member;
     private Date Date_emprunt;
     private Date Date_retour;
+    public emprunt(Livre livre, Membre membre, Date Date_emprunt, Date Date_retour) {
+        this.livre = livre;
+        this.member = membre;
+        this.Date_emprunt = Date_emprunt;
+        this.Date_retour = Date_retour;
+    }
+
+    public emprunt() {
+    }
 
     public Livre getLivre() {
         return livre;
@@ -39,12 +48,7 @@ public class emprunt {
     public void setDate_retour(Date date_retour) {
         Date_retour = date_retour;
     }
-    public emprunt(Livre livre, Membre membre, Date Date_emprunt, Date Date_retour) {
-        this.livre = livre;
-        this.member = membre;
-        this.Date_emprunt = Date_emprunt;
-        this.Date_retour = Date_retour;
-    }
+
 
 }
 
